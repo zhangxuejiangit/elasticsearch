@@ -46,6 +46,14 @@ public class MockFieldMapper extends FieldMapper {
             MultiFields.empty(), new CopyTo.Builder().build());
     }
 
+    public MockFieldMapper(String fullName,
+                           MappedFieldType fieldType,
+                           MultiFields multifields,
+                           CopyTo copyTo) {
+        super(findSimpleName(fullName), new FieldType(), fieldType, dummySettings,
+            multifields, copyTo);
+    }
+
     static String findSimpleName(String fullName) {
         int ndx = fullName.lastIndexOf('.');
         return fullName.substring(ndx + 1);
@@ -92,5 +100,21 @@ public class MockFieldMapper extends FieldMapper {
     @Override
     protected void mergeOptions(FieldMapper other, List<String> conflicts) {
 
+    }
+
+    public static class Builder extends FieldMapper.Builder<MockFieldMapper.Builder> {
+        private MappedFieldType fieldType;
+
+        protected Builder(String name) {
+            super(name, new FieldType());
+            this.fieldType = new FakeFieldType(name);
+            this.builder = this;
+        }
+
+        @Override
+        public MockFieldMapper build(BuilderContext context) {
+            MultiFields multiFields = multiFieldsBuilder.build(this, context);
+            return new MockFieldMapper(name(), fieldType, multiFields, copyTo);
+        }
     }
 }
