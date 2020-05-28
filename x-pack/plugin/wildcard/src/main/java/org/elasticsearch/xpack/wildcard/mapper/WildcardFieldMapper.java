@@ -604,7 +604,7 @@ public class WildcardFieldMapper extends FieldMapper {
         static boolean isMatchAll(Query q) {
             return q instanceof MatchAllDocsQuery || q instanceof MatchAllButRequireVerificationQuery;
         }
-        
+
         protected String firstNgramToken(String fragment) {
             LinkedHashSet<String> tokens = new LinkedHashSet<>();
             getNgramTokens(tokens, fragment);
@@ -695,7 +695,7 @@ public class WildcardFieldMapper extends FieldMapper {
             Query accelerationQuery = null;
             if (lowerTerm != null && upperTerm != null) {
                 // Long common prefixes e.g. "C:/Program Files/a,txt" to "C:/Program Files/z,txt"
-                // can be accelerated by searching for all the common leading ngrams e.g. c:/, /pr, rog, gra etc 
+                // can be accelerated by searching for all the common leading ngrams e.g. c:/, /pr, rog, gra etc
                 StringBuilder commonPrefix = new StringBuilder();
                 String lowerS = addLineEndChars(toLowerCase(lower.utf8ToString()));
                 String upperS = addLineEndChars(toLowerCase(upper.utf8ToString()));
@@ -733,26 +733,26 @@ public class WildcardFieldMapper extends FieldMapper {
                     BooleanQuery bq = bqBuilder.build();
                     if (bq.clauses().size() > 0) {
                         accelerationQuery = bq;
-                    }                     
-                }                
+                    }
+                }
             }
             if (accelerationQuery == null) {
                 // Fallback - if there is no common prefix sequence then we look for the range of ngrams that appear at the start
                 // of the string e.g. given 100 to 999 we would search for ngrams in the range
-                //   TOKEN_START_OR_END_CHAR + "10" to 
+                //   TOKEN_START_OR_END_CHAR + "10" to
                 //   TOKEN_START_OR_END_CHAR + "99"
                 BytesRef lowerNgram = lower == null ? null : new BytesRef(firstNgramToken(
                     addLineEndChars(toLowerCase(lower.utf8ToString()))));
                 BytesRef upperNgram = upper == null ? null : new BytesRef(firstNgramToken(
                     addLineEndChars(toLowerCase(upper.utf8ToString()))));
-                accelerationQuery = new TermRangeQuery(name(), lowerNgram, upperNgram, true, true);                
+                accelerationQuery = new TermRangeQuery(name(), lowerNgram, upperNgram, true, true);
             }
-            
+
             Supplier <Automaton> deferredAutomatonSupplier = ()->{
                 return TermRangeQuery.toAutomaton(lower, upper, includeLower, includeUpper);
             };
             AutomatonQueryOnBinaryDv slowQuery = new AutomatonQueryOnBinaryDv(name(), lower + "-" + upper, deferredAutomatonSupplier);
-            
+
             BooleanQuery.Builder qBuilder = new BooleanQuery.Builder();
             qBuilder.add(accelerationQuery, Occur.MUST);
             qBuilder.add(slowQuery, Occur.MUST);
@@ -955,6 +955,11 @@ public class WildcardFieldMapper extends FieldMapper {
         List<IndexableField> fields = new ArrayList<>();
         createFields(value, parseDoc, fields);
         parseDoc.addAll(fields);
+    }
+
+    @Override
+    protected String parseSourceValue(Object value) {
+        return value.toString();
     }
 
     void createFields(String value, Document parseDoc, List<IndexableField>fields) throws IOException {
