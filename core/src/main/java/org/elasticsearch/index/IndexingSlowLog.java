@@ -188,6 +188,8 @@ public final class IndexingSlowLog implements IndexingOperationListener {
             sb.append("took_millis[").append(TimeUnit.NANOSECONDS.toMillis(tookInNanos)).append("], ");
             sb.append("type[").append(doc.type()).append("], ");
             sb.append("id[").append(doc.id()).append("], ");
+            sb.append("version[").append(doc.version().stringValue()).append("], ");
+
             if (doc.routing() == null) {
                 sb.append("routing[] ");
             } else {
