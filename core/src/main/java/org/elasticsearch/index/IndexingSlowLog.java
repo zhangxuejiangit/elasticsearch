@@ -189,7 +189,9 @@ public final class IndexingSlowLog implements IndexingOperationListener {
             sb.append("type[").append(doc.type()).append("], ");
             sb.append("id[").append(doc.id()).append("], ");
             sb.append("version[").append(doc.version().stringValue()).append("], ");
-
+            sb.append("unique_id[").append(index.getName()).append(":").append(doc.type()).append(":")
+                .append(doc.id()).append(":").append(doc.version().stringValue()).append("], ");
+            
             if (doc.routing() == null) {
                 sb.append("routing[] ");
             } else {
@@ -199,11 +201,17 @@ public final class IndexingSlowLog implements IndexingOperationListener {
             if (maxSourceCharsToLog == 0 || doc.source() == null || doc.source().length() == 0) {
                 return sb.toString();
             }
+
             try {
                 String source = XContentHelper.convertToJson(doc.source(), reformat, doc.getXContentType());
-                sb.append(", source[").append(Strings.cleanTruncate(source, maxSourceCharsToLog)).append("]");
+                //sb.append(", source[").append(Strings.cleanTruncate(source, maxSourceCharsToLog)).append("]");
+                if (source.length() > maxSourceCharsToLog) {
+                    sb.append(", error_no[_source_overflow_], source[]");
+                } else {
+                    sb.append(", error_no[_normal_], source[").append(source).append("]");
+                }
             } catch (IOException e) {
-                sb.append(", source[_failed_to_convert_]");
+                sb.append(", error_no[_failed_to_convert_], source[]");
             }
             return sb.toString();
         }
